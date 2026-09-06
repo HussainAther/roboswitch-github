@@ -2,6 +2,8 @@
 
 A browser-based arena game built with vanilla JS and HTML5 Canvas.
 
+https://hussainather.github.io/roboswitch-github
+
 ## Play locally
 
 Because this uses ES modules (`type="module"`), you can't just double-click `index.html` —
