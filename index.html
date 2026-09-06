@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RoboSwitch Prototype</title>
+    <meta name="roboswitch-build" content="20260810-newgrounds-v1" />
+    <link rel="stylesheet" href="./styles.css?v=53" />
+  </head>
+  <body>
+    <main class="game-shell" aria-label="RoboSwitch playable prototype">
+      <section class="stage" id="stage">
+        <canvas id="game" tabindex="0" aria-label="RoboSwitch arena"></canvas>
+
+        <div class="hud hud-top hidden" id="hudTop" aria-live="polite">
+          <div class="brand-block">
+            <div class="brand">RoboSwitch</div>
+            <div class="substate" id="regimeLabel">Productive</div>
+          </div>
+
+          <div class="meter-pack">
+            <div class="meter-row">
+              <span>HP</span>
+              <div class="meter hp"><i id="hpBar"></i></div>
+            </div>
+            <div class="meter-row">
+              <span>EN</span>
+              <div class="meter energy"><i id="energyBar"></i></div>
+            </div>
+            <div class="meter-row">
+              <span>EBID</span>
+              <div class="meter entropy"><i id="entropyBar"></i></div>
+            </div>
+            <div class="meter-row">
+              <span>GD</span>
+              <div class="meter guard"><i id="guardBar"></i></div>
+            </div>
+          </div>
+
+          <div class="score-block">
+            <div id="waveLabel">Wave 1</div>
+            <div id="scoreLabel">0</div>
+          </div>
+        </div>
+
+        <button class="pause-chip hidden" id="pauseButton" type="button" aria-label="Pause game">II</button>
+        <div class="combo-chip hidden" id="comboChip" aria-live="polite"></div>
+        <div class="lock-cursor hidden" id="lockCursor" aria-hidden="true" data-label="AIM"></div>
+
+        <div class="mode-dock hidden" id="modeDock" role="group" aria-label="Mode selector">
+          <button class="mode-card pressure active" id="mode-pressure" type="button">
+            <span class="mode-glyph">1/Q</span>
+            <span>Pressure</span>
+          </button>
+          <button class="mode-card control" id="mode-control" type="button">
+            <span class="mode-glyph">2/F</span>
+            <span>Control</span>
+          </button>
+          <button class="mode-card chaos" id="mode-chaos" type="button">
+            <span class="mode-glyph">3/E</span>
+            <span>Chaos</span>
+          </button>
+          <button class="ability-button pulse-button" id="pulse-button" type="button" aria-label="Use Signal Pulse primary attack">
+            <span class="ability-key">A</span>
+            <span class="ability-copy"><strong>Pulse</strong><small>Z / J</small></span>
+          </button>
+          <button class="ability-button burst-button" id="burst-button" type="button" aria-label="Use Signal Burst special attack">
+            <span class="ability-key">B</span>
+            <span class="ability-copy"><strong>Burst</strong><small>X / K / Space</small></span>
+          </button>
+        </div>
+
+        <div class="curtain-transition is-closed" id="curtainTransition" aria-hidden="true">
+          <div class="curtain-valance" aria-hidden="true"></div>
+          <div class="curtain-panel curtain-left" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="curtain-panel curtain-right" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="curtain-seal" aria-hidden="true"><span>RS</span></div>
+        </div>
+
+        <div class="screen-layer" id="screenLayer"></div>
+
+        <div class="result-panel hidden" id="resultPanel" role="dialog" aria-modal="true">
+          <div class="result-title" id="resultTitle">System Collapse</div>
+          <div class="result-stats" id="resultStats">Score 0</div>
+          <div class="result-quip" id="resultQuip">The bot calls that a rehearsal.</div>
+          <div class="result-actions">
+            <button id="restartButton" type="button">Restart</button>
+            <button id="nextButton" type="button">Next</button>
+            <button id="resultSelectButton" type="button">Levels</button>
+            <button id="resultMenuButton" type="button">Menu</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script
+      type="module"
+      src="./src/game.js?v=53"
+    ></script>
+  </body>
+</html>
