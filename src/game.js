@@ -162,6 +162,16 @@ const ENEMIES = {
   null: { family: "control", role: "control", label: "Director Null", hp: 690, radius: 32, score: 3000, color: "#dcecff", boss: true },
 };
 
+const DIRECTOR_NULL_MODES = ["control", "chaos", "pressure"];
+
+function directorNullCounterMode(role) {
+  return modeThatCountersRole(role) || "chaos";
+}
+
+function directorNullColor(enemy) {
+  return MODES[enemy?.role]?.color || ENEMIES.null.color;
+}
+
 const LEVELS = [
   {
     id: "tutorial-loop",
@@ -226,9 +236,9 @@ const LEVELS = [
     objective: { afterWave: 2, type: "key", label: "GRID AUTHORIZATION", puzzle: ["chaos", "control", "chaos"] },
     // Control owns the room, but mixed flankers stop the player from camping in Chaos mode.
     waves: [
-      { turret: 1, sniper: 1, rusher: 1 },
-      { shield: 1, medic: 1, turret: 1, rammer: 1, teleporter: 1 },
-      { administrator: 1, sniper: 1, bruiser: 1 },
+      { turret: 1, rusher: 1 },
+      { shield: 1, rammer: 1, teleporter: 1 },
+      { administrator: 1, sniper: 1 },
       { core: 1 },
     ],
   },
@@ -314,8 +324,10 @@ const LEVELS = [
     ],
     objective: { afterWave: 2, type: "key", label: "ADAPTIVE SIGNAL KEY", puzzle: ["chaos", "control", "pressure", "chaos"] },
     waves: [
-      { shield: 2, sniper: 2, teleporter: 2 },
-      { administrator: 1, foreman: 1, prototype: 1 },
+      // Final arena: keep the mixed PCC pressure, but reduce crowding so the
+      // player can read the Nexus mechanic instead of getting buried in bodies.
+      { shield: 1, sniper: 1, teleporter: 1 },
+      { administrator: 1, prototype: 1 },
       { lattice: 1 },
       { null: 1 },
     ],
@@ -2815,10 +2827,49 @@ function updateLevelMechanic(dt) {
   }
   if (mechanic.type === "nexus") {
     const active = mechanic.phase < 0.24 || (mechanic.phase > 0.5 && mechanic.phase < 0.7);
-    if (active && p.invuln <= 0 && p.hurtCooldown <= 0) {
-      const dx = Math.abs(p.x - width * 0.5);
-      const dy = Math.abs(p.y - height * 0.53);
-      if (dx < 34 || dy < 34) hurtPlayer(14, width * 0.5, height * 0.53);
+
+    // Track whether RoboSwitch is physically overlapping one of the visible
+    // rotating bars. This powers both damage and very explicit danger feedback.
+    const cx = width * 0.5;
+    const cy = height * 0.53;
+    const halfLen = Math.min(width, height) * 0.24;
+    const halfThickness = 14 + p.radius * 0.65;
+    const px = p.x - cx;
+    const py = p.y - cy;
+    let inVisibleField = false;
+
+    for (let i = 0; i < 3; i += 1) {
+      const angle = mechanic.angle + (i + 1) * Math.PI / 3;
+      const c = Math.cos(angle);
+      const sn = Math.sin(angle);
+      const localX = px * c + py * sn;
+      const localY = -px * sn + py * c;
+      if (Math.abs(localX) <= halfLen && Math.abs(localY) <= halfThickness) {
+        inVisibleField = true;
+        break;
+      }
+    }
+
+    mechanic.playerInField = active && inVisibleField;
+    mechanic.contactCueCooldown = Math.max(0, (mechanic.contactCueCooldown || 0) - dt);
+
+    if (mechanic.playerInField && mechanic.contactCueCooldown <= 0) {
+      triggerFliCue("MOVE! NULL BARS DAMAGE YOU!", "alert", 1.35);
+      mechanic.contactCueCooldown = 2.2;
+    }
+
+    if (mechanic.playerInField && p.invuln <= 0 && p.hurtCooldown <= 0) {
+      hurtPlayer(10, cx, cy);
+      state.floaters.push({
+        text: "NULL FIELD  -10 HP",
+        x: p.x,
+        y: p.y - 30,
+        vy: -16,
+        life: 0.85,
+        maxLife: 0.85,
+        color: "#ff726b",
+        size: 16,
+      });
     }
   }
   if (mechanic.type === "fireWalls") {
@@ -2863,13 +2914,52 @@ function drawLevelMechanic() {
   }
   if (m.type === "nexus") {
     const cx = width * 0.5, cy = height * 0.53;
+    const active = m.phase < 0.24 || (m.phase > 0.5 && m.phase < 0.7);
+    const touching = Boolean(m.playerInField);
+    const pulse = 0.72 + Math.sin(state.time * 12) * 0.18;
+
     ctx.save();
-    ctx.translate(cx, cy); ctx.rotate(m.angle);
-    ctx.strokeStyle = "rgba(220,236,255,0.72)"; ctx.lineWidth = 4;
-    for (let i=0;i<3;i+=1){ctx.rotate(Math.PI/3);ctx.strokeRect(-Math.min(width,height)*0.24,-14,Math.min(width,height)*0.48,28);}
+    ctx.translate(cx, cy);
+    ctx.rotate(m.angle);
+    ctx.lineWidth = active ? 5 : 3;
+    ctx.shadowBlur = active ? 18 : 5;
+    ctx.shadowColor = active ? "rgba(255,86,78,0.95)" : "rgba(220,236,255,0.5)";
+    for (let i = 0; i < 3; i += 1) {
+      ctx.rotate(Math.PI / 3);
+      const barW = Math.min(width, height) * 0.48;
+      ctx.fillStyle = active
+        ? `rgba(255,72,64,${0.18 + pulse * 0.12})`
+        : "rgba(220,236,255,0.055)";
+      ctx.strokeStyle = active
+        ? `rgba(255,124,112,${0.72 + pulse * 0.2})`
+        : "rgba(220,236,255,0.58)";
+      ctx.fillRect(-barW * 0.5, -14, barW, 28);
+      ctx.strokeRect(-barW * 0.5, -14, barW, 28);
+    }
     ctx.restore();
-    ctx.fillStyle = m.warning ? "#ffffff" : "rgba(220,236,255,0.78)";
-    ctx.fillText(m.warning ? "NULL FIELD ALIGNING" : "READ THE RHYTHM • BREAK THE LOOP", width*0.5, 122);
+
+    ctx.fillStyle = touching ? "#ff726b" : active ? "#ffb2aa" : m.warning ? "#ffffff" : "rgba(220,236,255,0.78)";
+    ctx.font = touching ? "900 15px system-ui, sans-serif" : "700 13px system-ui, sans-serif";
+    ctx.fillText(
+      touching
+        ? "DANGER — NULL FIELD IS DAMAGING YOU"
+        : active
+          ? "NULL FIELD ACTIVE • STAY OFF THE RED BARS"
+          : m.warning
+            ? "NULL FIELD ALIGNING"
+            : "FIELD COOLING • CROSS WHILE DIM",
+      width * 0.5,
+      122,
+    );
+
+    if (touching) {
+      ctx.save();
+      ctx.globalAlpha = 0.22 + Math.sin(state.time * 18) * 0.08;
+      ctx.strokeStyle = "#ff554d";
+      ctx.lineWidth = 9;
+      ctx.strokeRect(8, 78, width - 16, height - 156);
+      ctx.restore();
+    }
   }
   if (m.type === "fireWalls") {
     const active=m.phase<0.46;
@@ -2885,19 +2975,36 @@ function drawLevelMechanic() {
   ctx.restore();
 }
 
+const PUZZLE_LAYOUTS = {
+  // Explicit per-room placements keep required interaction pads clear of static
+  // geometry and, where possible, out of the sweep of moving room mechanics.
+  "tutorial-loop": [[0.28, 0.34], [0.48, 0.30], [0.68, 0.58]],
+  "pressure-front": [[0.28, 0.46], [0.56, 0.30], [0.72, 0.58]],
+  "control-grid": [[0.24, 0.38], [0.76, 0.34], [0.72, 0.70]],
+  "chaos-field": [[0.28, 0.30], [0.48, 0.30], [0.60, 0.58]],
+  "phase-boundary": [[0.28, 0.50], [0.48, 0.30], [0.68, 0.54]],
+  "collapse-boss": [[0.28, 0.34], [0.48, 0.42], [0.64, 0.42], [0.48, 0.66]],
+  "signal-nexus": [[0.28, 0.38], [0.40, 0.38], [0.68, 0.42], [0.40, 0.66]],
+};
+
+const OBJECTIVE_LAYOUTS = {
+  "tutorial-loop": [0.76, 0.50],
+  "pressure-front": [0.76, 0.50],
+  "control-grid": [0.84, 0.50],
+  "chaos-field": [0.72, 0.50],
+  "phase-boundary": [0.76, 0.50],
+  "collapse-boss": [0.84, 0.50],
+  "signal-nexus": [0.76, 0.42],
+};
+
 function createPuzzleState(objective, level) {
   const sequence = Array.isArray(objective?.puzzle) && objective.puzzle.length
     ? objective.puzzle
     : ["pressure", "control", "chaos"];
-  // Control Grid has a solid reactor housing in the upper center. The generic
-  // three-node layout put its second (Control) pad inside that wall, making the
-  // access circuit impossible. Use a level-specific layout that keeps every pad
-  // in reachable floor space around the revolving gate.
-  const positions = level?.id === "control-grid"
-    ? [[0.24, 0.39], [0.78, 0.34], [0.72, 0.68]]
-    : sequence.length === 4
-      ? [[0.28, 0.38], [0.48, 0.33], [0.68, 0.42], [0.48, 0.66]]
-      : [[0.28, 0.4], [0.5, 0.3], [0.7, 0.6]];
+  const fallback = sequence.length === 4
+    ? [[0.28, 0.38], [0.48, 0.33], [0.68, 0.42], [0.48, 0.66]]
+    : [[0.28, 0.40], [0.50, 0.30], [0.70, 0.60]];
+  const positions = PUZZLE_LAYOUTS[level?.id] || fallback;
   return {
     active: false,
     solved: false,
@@ -2914,15 +3021,57 @@ function createPuzzleState(objective, level) {
   };
 }
 
+function findClearInteractionPoint(x, y, radius = 30) {
+  const minX = 58;
+  const maxX = Math.max(minX, width - 58);
+  const minY = 112;
+  const maxY = Math.max(minY, height - 112);
+  const candidateIsClear = (cx, cy) => {
+    const marker = { x: cx, y: cy, radius };
+    return !obstacles.some((obstacle) => circleHitsObstacle(marker, obstacle));
+  };
+
+  const startX = clamp(x, minX, maxX);
+  const startY = clamp(y, minY, maxY);
+  if (candidateIsClear(startX, startY)) return { x: startX, y: startY };
+
+  // Last-resort safety net for responsive layouts or future room edits: walk
+  // outward from the authored location until a nearby patch of clear floor is
+  // found. Required pads/keys should never be permanently embedded in geometry.
+  const step = Math.max(28, Math.min(width, height) * 0.045);
+  for (let ring = 1; ring <= 8; ring += 1) {
+    const distance = step * ring;
+    const samples = 16 + ring * 4;
+    for (let i = 0; i < samples; i += 1) {
+      const angle = (i / samples) * TAU;
+      const cx = clamp(startX + Math.cos(angle) * distance, minX, maxX);
+      const cy = clamp(startY + Math.sin(angle) * distance, minY, maxY);
+      if (candidateIsClear(cx, cy)) return { x: cx, y: cy };
+    }
+  }
+  return { x: startX, y: startY };
+}
+
 function syncPuzzleLayout() {
   if (!state?.puzzle) return;
   for (const node of state.puzzle.nodes) {
-    node.x = node.nx * width;
-    node.y = clamp(node.ny * height, 110, height - 110);
+    const safe = findClearInteractionPoint(
+      node.nx * width,
+      clamp(node.ny * height, 110, height - 110),
+      31,
+    );
+    node.x = safe.x;
+    node.y = safe.y;
   }
   if (state.objective) {
-    state.objective.x = width * 0.78;
-    state.objective.y = height * 0.5;
+    const objectivePosition = OBJECTIVE_LAYOUTS[state.level?.id] || [0.78, 0.50];
+    const safe = findClearInteractionPoint(
+      width * objectivePosition[0],
+      clamp(height * objectivePosition[1], 110, height - 110),
+      27,
+    );
+    state.objective.x = safe.x;
+    state.objective.y = safe.y;
   }
 }
 
@@ -3204,10 +3353,14 @@ function updateEnemies(dt) {
       continue;
     }
 
-    const family = ENEMIES[enemy.kind]?.family || enemy.role;
-    if (family === "pressure") updatePressureEnemy(enemy, dt);
-    if (family === "control") updateControlEnemy(enemy, dt);
-    if (family === "chaos") updateChaosEnemy(enemy, dt);
+    if (enemy.kind === "null") {
+      updateDirectorNull(enemy, dt);
+    } else {
+      const family = ENEMIES[enemy.kind]?.family || enemy.role;
+      if (family === "pressure") updatePressureEnemy(enemy, dt);
+      if (family === "control") updateControlEnemy(enemy, dt);
+      if (family === "chaos") updateChaosEnemy(enemy, dt);
+    }
 
     enemy.x += enemy.vx * dt;
     enemy.y += enemy.vy * dt;
@@ -3216,6 +3369,50 @@ function updateEnemies(dt) {
     collideCircleObstacles(enemy);
   }
   separateEnemies();
+}
+
+function updateDirectorNull(enemy, dt) {
+  enemy.nullModeTimer = Math.max(-1, (enemy.nullModeTimer || 0) - dt);
+  enemy.nullHintCooldown = Math.max(0, (enemy.nullHintCooldown || 0) - dt);
+
+  if (enemy.nullModeTimer <= 0) {
+    const phase = enemy.bossPhase || 1;
+    enemy.nullModeIndex = ((enemy.nullModeIndex ?? 0) + 1) % DIRECTOR_NULL_MODES.length;
+    enemy.role = DIRECTOR_NULL_MODES[enemy.nullModeIndex];
+    enemy.nullModeTimer = phase >= 3 ? 3.8 : phase === 2 ? 4.5 : 5.2;
+
+    // Reset the active behavior so every identity shift reads as a clean beat.
+    enemy.cooldown = 0.72;
+    enemy.windup = 0;
+    enemy.dash = 0;
+    enemy.recover = 0;
+    enemy.fireTimer = 0.92;
+    enemy.charge = 0;
+    enemy.turnTimer = 0.16;
+    enemy.targetVx = 0;
+    enemy.targetVy = 0;
+
+    const counter = directorNullCounterMode(enemy.role);
+    const color = directorNullColor(enemy);
+    state.floaters.push({
+      text: `NULL: ${enemy.role.toUpperCase()}  •  USE ${counter.toUpperCase()}`,
+      x: enemy.x,
+      y: enemy.y - enemy.radius - 32,
+      vy: -12,
+      life: 1.55,
+      maxLife: 1.55,
+      color,
+      size: 16,
+    });
+    spawnParticles(enemy.x, enemy.y, color, 22, 190);
+    state.shake = Math.max(state.shake, 0.42);
+    triggerFliCue(`NULL SHIFT: ${enemy.role.toUpperCase()} — USE ${counter.toUpperCase()}!`, "alert", 2.1);
+    playSfx("mode", enemy.role);
+  }
+
+  if (enemy.role === "pressure") updatePressureEnemy(enemy, dt);
+  else if (enemy.role === "chaos") updateChaosEnemy(enemy, dt);
+  else updateControlEnemy(enemy, dt);
 }
 
 function updatePressureEnemy(enemy, dt) {
@@ -3761,7 +3958,13 @@ function spawnEnemy(kind, spawn = null, phase = Math.random()) {
     y = point.y;
   }
 
-  const hp = spec.hp + Math.max(0, state.wave - 1) * 4;
+  let hp = spec.hp + Math.max(0, state.wave - 1) * 4;
+  // Signal Nexus was disproportionately punishing because several Control-family
+  // enemies are naturally tanky. Ease the non-final Control units here only;
+  // Director Null keeps full final-boss durability.
+  if (state.level?.id === "signal-nexus" && spec.family === "control" && kind !== "null") {
+    hp = Math.max(1, Math.round(hp * 0.72));
+  }
   const enemy = {
     kind,
     role: spec.role,
@@ -3785,6 +3988,28 @@ function spawnEnemy(kind, spawn = null, phase = Math.random()) {
   if (family === "pressure") Object.assign(enemy, { cooldown: rand(0.45, 1.6) + enemy.spawnGrace, windup: 0, dash: 0, recover: 0, auraTimer: rand(1.2,2.5) });
   if (family === "control") Object.assign(enemy, { fireTimer: rand(0.8, 1.8) + enemy.spawnGrace, charge: 0, healTimer: rand(1,2), summonTimer: rand(2,4) });
   if (family === "chaos") Object.assign(enemy, { turnTimer: rand(0.1, 0.4), targetVx: rand(-90, 90), targetVy: rand(-90, 90), teleportTimer: rand(1,2.6), bombTimer: rand(.8,1.8) });
+  if (kind === "null") {
+    Object.assign(enemy, {
+      role: "control",
+      nullModeIndex: 0,
+      nullModeTimer: 5.2,
+      nullHintCooldown: 0,
+      cooldown: 0.8 + enemy.spawnGrace,
+      windup: 0,
+      dash: 0,
+      recover: 0,
+      auraTimer: 2,
+      fireTimer: 1.0 + enemy.spawnGrace,
+      charge: 0,
+      healTimer: 2,
+      summonTimer: 99,
+      turnTimer: 0.18,
+      targetVx: 0,
+      targetVy: 0,
+      teleportTimer: 99,
+      bombTimer: 99,
+    });
+  }
   state.enemies.push(enemy);
 }
 
@@ -4072,6 +4297,27 @@ function damageEnemy(enemy, amount, sourceMode) {
   let multiplier = 0.82;
   if (correctCounter) multiplier = 2.25;
   if (enemy.role === sourceMode) multiplier = 0.48;
+
+  // Director Null is the one encounter that truly demands PCC adaptation.
+  // Off-counter attacks still chip him, but the correct response is dramatically stronger.
+  if (enemy.kind === "null") {
+    multiplier = correctCounter ? 2.65 : (enemy.role === sourceMode ? 0.16 : 0.30);
+    if (!correctCounter && amount > 1 && (enemy.nullHintCooldown || 0) <= 0) {
+      const counter = directorNullCounterMode(enemy.role);
+      enemy.nullHintCooldown = 1.15;
+      state.floaters.push({
+        text: `RESISTED • USE ${counter.toUpperCase()}`,
+        x: enemy.x,
+        y: enemy.y - enemy.radius - 18,
+        vy: -15,
+        life: 0.9,
+        maxLife: 0.9,
+        color: MODES[counter].color,
+        size: 13,
+      });
+    }
+  }
+
   if (enemy.weak > 0 && sourceMode === "control") multiplier += 0.95;
   if (enemy.shielded > 0) multiplier *= 0.52;
   enemy.hp -= amount * multiplier;
@@ -4244,10 +4490,25 @@ function finalizeEndGame(won) {
     ngBridge.postScore("survival", state.score);
   }
 
-  resultTitle.textContent = won ? "Loop Stabilized" : "System Collapse";
+  const isFinalVictory = won && state.playMode === "campaign" && app.levelIndex === LEVELS.length - 1;
   resultPanel.dataset.outcome = won ? "win" : "loss";
-  resultStats.textContent = `${state.level.title} | Score ${state.score} | Wave ${state.wave} | EBID ${Math.round(state.entropyDeficit * 100)}%`;
-  if (resultQuip) resultQuip.textContent = resultQuipFor(won);
+  resultPanel.dataset.finalVictory = isFinalVictory ? "true" : "false";
+
+  if (isFinalVictory) {
+    resultTitle.textContent = "VICTORY — SIGNAL RESTORED";
+    resultStats.textContent = `DIRECTOR NULL DEFEATED • FINAL SCORE ${state.score} • EBID ${Math.round(state.entropyDeficit * 100)}%`;
+    if (resultQuip) resultQuip.textContent = "The perfect signal is broken. RoboSwitch and Fli leave the Nexus with the city alive, noisy, adaptive — and free to change.";
+    restartButton.textContent = "Replay Finale";
+    resultSelectButton.textContent = "Level Select";
+    resultMenuButton.textContent = "Main Menu";
+  } else {
+    resultTitle.textContent = won ? "Loop Stabilized" : "System Collapse";
+    resultStats.textContent = `${state.level.title} | Score ${state.score} | Wave ${state.wave} | EBID ${Math.round(state.entropyDeficit * 100)}%`;
+    if (resultQuip) resultQuip.textContent = resultQuipFor(won);
+    restartButton.textContent = "Restart";
+    resultSelectButton.textContent = "Levels";
+    resultMenuButton.textContent = "Menu";
+  }
   nextButton.hidden = !(won && state.playMode === "campaign" && app.levelIndex < LEVELS.length - 1);
   resultPanel.classList.remove("hidden");
   hudTop.classList.add("hidden");
@@ -5589,7 +5850,8 @@ function drawBossSprite(enemy) {
   ctx.strokeStyle = COMIC_INK;
   ctx.lineWidth = Math.max(4, r * .13);
 
-  const fill = flash ? "#fff7e8" : spec.color;
+  const identityColor = kind === "null" ? directorNullColor(enemy) : spec.color;
+  const fill = flash ? "#fff7e8" : identityColor;
   const eye = kind === "null" ? "#ffffff" : "#ffe96b";
   const pulse = Math.sin(t * 4 + enemy.seed) * 2;
 
@@ -5653,7 +5915,7 @@ function drawBossSprite(enemy) {
     ctx.strokeStyle="rgba(255,255,255,.65)";ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(0,-r*.78,r*.28,0,TAU);ctx.stroke();
     ctx.beginPath();ctx.ellipse(0,0,r+17+pulse,r*.5,t*.08,0,TAU);ctx.stroke();
-    ctx.fillStyle=flash?"#fff":"#e8f2f7";ctx.strokeStyle="#26343d";ctx.lineWidth=4;
+    ctx.fillStyle=flash?"#fff":identityColor;ctx.strokeStyle="#e8f2f7";ctx.lineWidth=4;
     ctx.beginPath();ctx.moveTo(0,-r*.58);ctx.lineTo(r*.48,-r*.12);ctx.lineTo(r*.28,r*.72);ctx.lineTo(0,r*.92);ctx.lineTo(-r*.28,r*.72);ctx.lineTo(-r*.48,-r*.12);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle="#172129";ctx.fillRect(-r*.2,-r*.3,r*.4,r*.12);ctx.fillStyle="#fff";ctx.fillRect(-r*.14,-r*.27,r*.28,2);
   } else {
@@ -5665,7 +5927,7 @@ function drawBossSprite(enemy) {
   }
 
   ctx.shadowColor="transparent";ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
-  ctx.strokeStyle=spec.color;ctx.globalAlpha=.7;ctx.lineWidth=3;ctx.setLineDash([10,6]);
+  ctx.strokeStyle=identityColor;ctx.globalAlpha=.7;ctx.lineWidth=3;ctx.setLineDash([10,6]);
   ctx.beginPath();ctx.arc(0,0,r+12+pulse,0,TAU);ctx.stroke();ctx.setLineDash([]);
   ctx.restore();
 }
@@ -5687,7 +5949,15 @@ function drawEnemyIdentity(enemy) {
   if (enemy.kind==="anomaly") { ctx.strokeStyle="#ffef73";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-enemy.radius-14,-10);ctx.lineTo(enemy.radius+7,13);ctx.moveTo(-enemy.radius+4,enemy.radius+10);ctx.lineTo(enemy.radius+14,-enemy.radius-7);ctx.stroke(); }
   if (enemy.kind==="lattice") { ctx.strokeStyle="#a9dcff";ctx.lineWidth=5;ctx.strokeRect(-enemy.radius-11,-enemy.radius-11,(enemy.radius+11)*2,(enemy.radius+11)*2); }
   if (enemy.kind==="crown") { ctx.fillStyle="#ff9b3d";for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i*10-6,-enemy.radius-4);ctx.lineTo(i*10,-enemy.radius-22-Math.sin(state.time*7+i)*5);ctx.lineTo(i*10+6,-enemy.radius-4);ctx.fill();} }
-  if (enemy.kind==="null") { ctx.strokeStyle="#ffffff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-enemy.radius-16,11,0,TAU);ctx.stroke();ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(0,0,enemy.radius+18+Math.sin(state.time*2)*3,0,TAU);ctx.stroke(); }
+  if (enemy.kind==="null") {
+    const nullColor = directorNullColor(enemy);
+    const counter = directorNullCounterMode(enemy.role);
+    ctx.strokeStyle=nullColor;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,-enemy.radius-16,11,0,TAU);ctx.stroke();
+    ctx.globalAlpha=.46;ctx.beginPath();ctx.arc(0,0,enemy.radius+18+Math.sin(state.time*2)*3,0,TAU);ctx.stroke();
+    ctx.globalAlpha=1;ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="900 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillStyle=nullColor;ctx.fillText(`NULL // ${enemy.role.toUpperCase()}`,0,-enemy.radius-34);
+    ctx.font="800 9px ui-monospace, SFMono-Regular, Menlo, monospace";ctx.fillStyle=MODES[counter].color;ctx.fillText(`USE ${counter.toUpperCase()}`,0,-enemy.radius-22);
+  }
   ctx.restore();
 }
 
@@ -5698,7 +5968,7 @@ function drawEnemyHp(enemy) {
   ctx.save();
   ctx.fillStyle = "rgba(0, 0, 0, 0.52)";
   ctx.fillRect(enemy.x - w / 2, enemy.y - enemy.radius - 12, w, 4);
-  ctx.fillStyle = ENEMIES[enemy.kind].color;
+  ctx.fillStyle = enemy.kind === "null" ? directorNullColor(enemy) : ENEMIES[enemy.kind].color;
   ctx.fillRect(enemy.x - w / 2, enemy.y - enemy.radius - 12, w * pct, 4);
   ctx.restore();
 }
