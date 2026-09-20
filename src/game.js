@@ -176,7 +176,13 @@ const LEVELS = [
       { shape: "rect", x: 0.5, y: 0.72, w: 0.22, h: 0.045 },
     ],
     objective: { afterWave: 2, type: "key", label: "TRAINING KEY", puzzle: ["pressure", "control", "chaos"] },
-    waves: [{ wobbler: 3, teleporter: 1 }, { rusher: 2, sprinter: 2 }, { turret: 1, sniper: 1, medic: 1 }, { prototype: 1 }],
+    // Even the training room mixes regimes so switching becomes a habit rather than a boss-only trick.
+    waves: [
+      { wobbler: 2, teleporter: 1, rusher: 1 },
+      { rusher: 2, sprinter: 1, turret: 1 },
+      { turret: 1, sniper: 1, medic: 1 },
+      { prototype: 1 },
+    ],
   },
   {
     id: "pressure-front",
@@ -195,7 +201,13 @@ const LEVELS = [
       { shape: "rect", x: 0.40, y: 0.78, w: 0.32, h: 0.04 },
     ],
     objective: { afterWave: 2, type: "key", label: "IMPACT KEYCARD", puzzle: ["control", "pressure", "control"] },
-    waves: [{ rusher: 3, sprinter: 3 }, { rammer: 2, bruiser: 1, sprinter: 3 }, { foreman: 1, rusher: 3 }, { surge: 1 }],
+    // Pressure remains dominant, but Control and Chaos units force counter-cycling inside every wave.
+    waves: [
+      { rusher: 3, sprinter: 2, turret: 1 },
+      { rammer: 2, bruiser: 1, sprinter: 2, teleporter: 1 },
+      { foreman: 1, rusher: 2, sniper: 1 },
+      { surge: 1 },
+    ],
   },
   {
     id: "control-grid",
@@ -212,7 +224,13 @@ const LEVELS = [
       { x: 0.5, y: 0.53, r: 0.035 },
     ],
     objective: { afterWave: 2, type: "key", label: "GRID AUTHORIZATION", puzzle: ["chaos", "control", "chaos"] },
-    waves: [{ turret: 2, sniper: 1 }, { shield: 2, medic: 1, turret: 2 }, { administrator: 1, sniper: 2 }, { core: 1 }],
+    // Control owns the room, but mixed flankers stop the player from camping in Chaos mode.
+    waves: [
+      { turret: 1, sniper: 1, rusher: 1 },
+      { shield: 1, medic: 1, turret: 1, rammer: 1, teleporter: 1 },
+      { administrator: 1, sniper: 1, bruiser: 1 },
+      { core: 1 },
+    ],
   },
   {
     id: "chaos-field",
@@ -229,7 +247,13 @@ const LEVELS = [
       { x: 0.5, y: 0.52, r: 0.03 },
     ],
     objective: { afterWave: 2, type: "key", label: "UNSTABLE ACCESS TOKEN", puzzle: ["pressure", "chaos", "pressure"] },
-    waves: [{ wobbler: 5, teleporter: 3 }, { bomber: 3, spinner: 2, wobbler: 3 }, { prototype: 1, teleporter: 3 }, { anomaly: 1 }],
+    // Chaos dominates the population, while pressure and control anchors make one-mode play brittle.
+    waves: [
+      { wobbler: 4, teleporter: 2, rusher: 1, turret: 1 },
+      { bomber: 2, spinner: 2, wobbler: 2, sprinter: 1, sniper: 1 },
+      { prototype: 1, teleporter: 2, rammer: 1 },
+      { anomaly: 1 },
+    ],
   },
   {
     id: "phase-boundary",
@@ -247,7 +271,7 @@ const LEVELS = [
     ],
     objective: { afterWave: 2, type: "key", label: "PHASE-SEAM KEY", puzzle: ["control", "chaos", "pressure"] },
     waves: [
-      { sprinter: 3, teleporter: 3, sniper: 1 },
+      { sprinter: 2, teleporter: 2, sniper: 2, wobbler: 1 },
       { bruiser: 1, shield: 1, bomber: 2, medic: 1 },
       { foreman: 1, administrator: 1, prototype: 1 },
       { lattice: 1 },
@@ -269,9 +293,9 @@ const LEVELS = [
     ],
     objective: { afterWave: 2, type: "key", label: "REACTOR MASTER KEY", puzzle: ["pressure", "control", "chaos", "pressure"] },
     waves: [
-      { rammer: 2, teleporter: 3, sniper: 2 },
+      { rammer: 2, teleporter: 2, sniper: 2, wobbler: 1 },
       { foreman: 1, administrator: 1, prototype: 1 },
-      { bruiser: 2, shield: 2, bomber: 3, medic: 1 },
+      { bruiser: 2, shield: 1, bomber: 2, medic: 1, sprinter: 1, teleporter: 1 },
       { crown: 1 },
     ],
   },
@@ -311,7 +335,11 @@ const SURVIVAL_LEVEL = {
     { x: 0.57, y: 0.71, r: 0.052 },
     { shape: "rect", x: 0.28, y: 0.73, w: 0.16, h: 0.045 },
   ],
-  waves: [{ wobbler: 7 }, { rusher: 5, wobbler: 3 }, { turret: 3, rusher: 3, wobbler: 2 }],
+  waves: [
+    { wobbler: 4, rusher: 2, turret: 1 },
+    { rusher: 3, wobbler: 3, sniper: 1, teleporter: 1 },
+    { turret: 2, rusher: 2, wobbler: 2, bomber: 1, shield: 1 },
+  ],
 };
 
 const INTRO_CUTSCENES = [
@@ -3646,6 +3674,80 @@ function wavePlanFor(number) {
   };
 }
 
+
+function findEnemySpawnPoint(radius, phase = Math.random()) {
+  const marginX = Math.max(46, radius + 18);
+  const minY = Math.max(104, radius + 88);
+  const maxY = Math.min(height - 98, height - radius - 24);
+
+  const valid = (x, y, minPlayerDistance = 150, minEnemyDistance = 74) => {
+    const probe = { x, y, radius: radius + 5 };
+    if (distance(x, y, state.player.x, state.player.y) < minPlayerDistance) return false;
+    for (const obstacle of obstacles) if (circleHitsObstacle(probe, obstacle)) return false;
+    for (const enemy of state.enemies) {
+      if (distance(x, y, enemy.x, enemy.y) < radius + enemy.radius + minEnemyDistance) return false;
+    }
+    return true;
+  };
+
+  // Most enemies now appear *inside* the arena. A minority still arrive from the
+  // perimeter so waves retain some sense of reinforcement rather than materializing
+  // as a perfectly uniform cloud. The phase offset keeps same-kind batches from
+  // piling into one quadrant.
+  const preferInterior = Math.random() < 0.76;
+  if (preferInterior) {
+    const sectors = [
+      [0.18, 0.34], [0.38, 0.30], [0.62, 0.31], [0.82, 0.36],
+      [0.22, 0.56], [0.42, 0.50], [0.60, 0.53], [0.80, 0.57],
+      [0.20, 0.76], [0.39, 0.72], [0.61, 0.75], [0.81, 0.72],
+    ];
+    const start = Math.floor(phase * sectors.length) % sectors.length;
+    for (let attempt = 0; attempt < 24; attempt += 1) {
+      const sector = sectors[(start + attempt * 5) % sectors.length];
+      const x = clamp(width * sector[0] + rand(-70, 70), marginX, width - marginX);
+      const y = clamp(height * sector[1] + rand(-48, 48), minY, maxY);
+      if (valid(x, y)) return { x, y };
+    }
+  }
+
+  // Edge reinforcement fallback, still randomized along the full playable edge.
+  for (let attempt = 0; attempt < 16; attempt += 1) {
+    const edge = Math.floor(rand(0, 4));
+    const edgePad = Math.max(42, radius + 15);
+    let x;
+    let y;
+    if (edge === 0) {
+      x = rand(marginX, width - marginX);
+      y = minY;
+    } else if (edge === 1) {
+      x = width - edgePad;
+      y = rand(minY, maxY);
+    } else if (edge === 2) {
+      x = rand(marginX, width - marginX);
+      y = maxY;
+    } else {
+      x = edgePad;
+      y = rand(minY, maxY);
+    }
+    if (valid(x, y, 135, 54)) return { x, y };
+  }
+
+  // Last-resort free-space search. This prevents dense late waves from failing
+  // to spawn when the hand-authored room geometry blocks several preferred cells.
+  for (let attempt = 0; attempt < 48; attempt += 1) {
+    const x = rand(marginX, width - marginX);
+    const y = rand(minY, maxY);
+    if (valid(x, y, 110, 28)) return { x, y };
+  }
+
+  // Extremely crowded room: mirror away from the player and let collision
+  // resolution separate the enemy on the first active frames.
+  return {
+    x: clamp(width - state.player.x + rand(-90, 90), marginX, width - marginX),
+    y: clamp(height - state.player.y + rand(-70, 70), minY, maxY),
+  };
+}
+
 function spawnEnemy(kind, spawn = null, phase = Math.random()) {
   const spec = ENEMIES[kind] || ENEMIES.wobbler;
   let x;
@@ -3654,26 +3756,9 @@ function spawnEnemy(kind, spawn = null, phase = Math.random()) {
     x = spawn.x * width;
     y = clamp(spawn.y * height, 96, height - 94);
   } else {
-    const edge = Math.floor(rand(0, 4));
-    const pad = 34;
-    if (edge === 0) {
-      x = rand(pad, width - pad);
-      y = 92;
-    } else if (edge === 1) {
-      x = width - pad;
-      y = rand(98, height - 100);
-    } else if (edge === 2) {
-      x = rand(pad, width - pad);
-      y = height - 95;
-    } else {
-      x = pad;
-      y = rand(98, height - 100);
-    }
-  }
-
-  if (distance(x, y, state.player.x, state.player.y) < 130) {
-    x = clamp(width - x, 42, width - 42);
-    y = clamp(height - y, 100, height - 100);
+    const point = findEnemySpawnPoint(spec.radius * 1.08, phase);
+    x = point.x;
+    y = point.y;
   }
 
   const hp = spec.hp + Math.max(0, state.wave - 1) * 4;
