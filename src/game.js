@@ -685,6 +685,7 @@ const terminalState = {
 // than a 1:1 logical canvas. 0.92 keeps the chunky readability while giving
 // the player and enemies much better breathing room in a typical 960x540 NG embed.
 const NEWGROUNDS_ARENA_SCALE = 0.92;
+const PLAYER_SPEED_MULTIPLIER = 1.5;
 
 let dpr = 1;
 let width = 960;
@@ -2694,7 +2695,7 @@ function createGameState(level, mode) {
     floaters: [],
     afterimages: [],
     objective: level.objective ? { ...level.objective, active: false, collected: false, x: width * 0.78, y: height * 0.5 } : null,
-    puzzle: level.objective ? createPuzzleState(level.objective) : null,
+    puzzle: level.objective ? createPuzzleState(level.objective, level) : null,
     roomDoor: { locked: Boolean(level.objective), open: false },
     mechanic: createLevelMechanic(level),
     bossIntroPlayed: false,
@@ -2856,13 +2857,19 @@ function drawLevelMechanic() {
   ctx.restore();
 }
 
-function createPuzzleState(objective) {
+function createPuzzleState(objective, level) {
   const sequence = Array.isArray(objective?.puzzle) && objective.puzzle.length
     ? objective.puzzle
     : ["pressure", "control", "chaos"];
-  const positions = sequence.length === 4
-    ? [[0.28, 0.38], [0.48, 0.33], [0.68, 0.42], [0.48, 0.66]]
-    : [[0.28, 0.4], [0.5, 0.3], [0.7, 0.6]];
+  // Control Grid has a solid reactor housing in the upper center. The generic
+  // three-node layout put its second (Control) pad inside that wall, making the
+  // access circuit impossible. Use a level-specific layout that keeps every pad
+  // in reachable floor space around the revolving gate.
+  const positions = level?.id === "control-grid"
+    ? [[0.24, 0.39], [0.78, 0.34], [0.72, 0.68]]
+    : sequence.length === 4
+      ? [[0.28, 0.38], [0.48, 0.33], [0.68, 0.42], [0.48, 0.66]]
+      : [[0.28, 0.4], [0.5, 0.3], [0.7, 0.6]];
   return {
     active: false,
     solved: false,
@@ -3050,6 +3057,7 @@ function handleMovement(dt) {
   if (state.mode === "pressure") speed = 248;
   if (state.mode === "control") speed = 148;
   if (state.mode === "chaos") speed = 214;
+  speed *= PLAYER_SPEED_MULTIPLIER;
   speed *= 1 - state.entropyDeficit * 0.12;
 
   let driftX = 0;
