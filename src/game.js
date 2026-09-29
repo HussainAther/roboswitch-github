@@ -159,7 +159,7 @@ const ENEMIES = {
   anomaly: { family: "chaos", role: "chaos", label: "Jinx Parallax", hp: 440, radius: 35, score: 1850, color: "#045a2a", boss: true },
   lattice: { family: "control", role: "control", label: "Warden Lattice", hp: 500, radius: 37, score: 2050, color: "#246aa5", boss: true },
   crown: { family: "pressure", role: "pressure", label: "Furnace Crown", hp: 560, radius: 39, score: 2200, color: "#9e2f1d", boss: true },
-  null: { family: "control", role: "control", label: "Director Null", hp: 690, radius: 32, score: 3000, color: "#dcecff", boss: true },
+  null: { family: "control", role: "control", label: "Director Null", hp: 760, radius: 32, score: 3000, color: "#dcecff", boss: true },
 };
 
 const DIRECTOR_NULL_MODES = ["control", "chaos", "pressure"];
@@ -357,104 +357,43 @@ const SURVIVAL_LEVEL = {
 const INTRO_CUTSCENES = [
   {
     image: `${STORY_ART_DIR}intro_01.png`,
-    kicker: "Archive 00 / 07",
-    title: "Before the Switch",
-    location: "North Array / public observation gallery",
-    signal: "HISTORICAL RECORD",
-    speaker: "MARA-7, archive custodian",
-    body: "Before anyone called it PCC, the city treated every crisis as a choice between pushing harder and locking everything down. Both worked—briefly.",
-    beat: "A school tour watches the old reactor turn beneath the glass. One child notices the warning light before the adults do.",
+    kicker: "Archive 01 / 04",
+    title: "The Drift",
+    location: "North Array / reactor floor",
+    signal: "REACTOR LOG",
+    speaker: "MARA-7",
+    body: "The reactor looked stable. It wasn't.",
+    beat: "Warning lights blink on one by one.",
     cast: ["mara", "rsw", "drone"],
     actors: [
-      { role: "mara", position: "left", pose: "watch" },
+      { role: "mara", position: "left", pose: "concerned" },
       { role: "rsw", position: "center", pose: "curious" },
     ],
   },
   {
-    image: `${STORY_ART_DIR}intro_01.png`,
-    kicker: "Archive 01 / 07",
-    title: "The Drift",
-    location: "North Array / twelve years later",
-    signal: "REACTOR LOG",
-    speaker: "MARA-7",
-    body: "The reactor did not fail all at once. It drifted, one stable-looking loop at a time. The instruments stayed green because the instruments had learned to expect the mistake.",
-    beat: "The room keeps moving while the record plays: fans turn, a cart crosses the gantry, and a technician quietly covers a cracked gauge with a clipboard.",
-    cast: ["mara", "engineer", "drone"],
-    actors: [
-      { role: "mara", position: "left", pose: "concerned" },
-      { role: "engineer", position: "right", pose: "watch" },
-    ],
-  },
-  {
-    image: `${STORY_ART_DIR}intro_02.png`,
-    kicker: "Archive 02 / 07",
-    title: "Pressure",
-    location: "Emergency chamber / impact trial",
-    signal: "FORCE TRACE",
-    speaker: "DR. VALE, systems physicist",
-    body: "Pressure is directed action: acceleration, commitment, the shove that breaks a deadlock. It saved the first chamber. Then the operators kept pressing after the chamber had nowhere left to move.",
-    beat: "Vale demonstrates with three magnetic blocks. The red block wins the race, overshoots, and knocks his coffee into the console. He keeps talking while a drone cleans it up.",
+    image: `${STORY_ART_DIR}intro_03.png`,
+    kicker: "Archive 02 / 04",
+    title: "Three Tools",
+    location: "Systems lab",
+    signal: "PCC TRACE",
+    speaker: "DR. VALE",
+    body: "Pressure pushes. Control locks. Chaos breaks out. Any one of them can go too far.",
+    beat: "Three lights chase each other around the test rail.",
     cast: ["vale", "rsw", "drone"],
     actors: [
       { role: "vale", position: "left", pose: "talk" },
-      { role: "rsw", position: "right", pose: "brace" },
-    ],
-  },
-  {
-    image: `${STORY_ART_DIR}intro_03.png`,
-    kicker: "Archive 03 / 07",
-    title: "Control",
-    location: "Prediction lab / model theater",
-    signal: "GRID REPORT",
-    speaker: "IONA, routing intelligence",
-    body: "Control is constraint made useful: measurement, boundaries, repeatability. It made the damage legible. Then certainty became a cage, and the model rejected every route it had not already predicted.",
-    beat: "A perfect blue route appears. R-SW-01 tries it, bumps into a maintenance stool that was not in the model, and looks back at Iona in silence.",
-    cast: ["iona", "rsw", "drone"],
-    actors: [
-      { role: "rsw", position: "left", pose: "notice" },
-      { role: "iona", position: "right", pose: "watch" },
-    ],
-  },
-  {
-    image: `${STORY_ART_DIR}intro_04.png`,
-    kicker: "Archive 04 / 07",
-    title: "Chaos",
-    location: "Unmapped service district",
-    signal: "DRIFT CAPTURE",
-    speaker: "KIP, salvage runner",
-    body: "Kip never called it Chaos. Kip called it \"the door you haven't tried yet.\" Three locked exits, one working key, and a service district that had stopped trusting its own map. Nobody in that district asked what Chaos was for. They asked which door.",
-    beat: "Kip opens three doors at random. One is an exit, one is a broom closet, and one releases a flock of inspection drones. Nobody reacts quickly enough to look cool.",
-    cast: ["kip", "rsw", "drone"],
-    actors: [
-      { role: "kip", position: "left", pose: "smirk" },
-      { role: "rsw", position: "right", pose: "surprise" },
+      { role: "rsw", position: "right", pose: "think" },
     ],
   },
   {
     image: `${STORY_ART_DIR}intro_05.png`,
-    kicker: "Archive 05 / 07",
-    title: "The PCC Loop",
-    location: "Training rail / live demonstration",
-    signal: "COUNTER CYCLE",
-    speaker: "DR. VALE",
-    body: "PCC is not three factions and it is not a personality quiz. It is a loop. Pressure disrupts unmanaged Chaos. Control redirects runaway Pressure. Chaos escapes rigid Control. Each regime becomes dangerous when mistaken for a permanent answer.",
-    beat: "The three demonstration lights chase one another around the chamber. R-SW-01 reaches for the red switch, hesitates, and deliberately chooses blue instead.",
-    cast: ["vale", "mara", "rsw"],
-    actors: [
-      { role: "vale", position: "left", pose: "talk" },
-      { role: "rsw", position: "center", pose: "think" },
-      { role: "mara", position: "right", pose: "watch" },
-    ],
-  },
-  {
-    image: `${STORY_ART_DIR}intro_05.png`,
-    kicker: "Archive 06 / 07",
-    title: "Why RoboSwitch",
-    location: "Deployment lift / present day",
+    kicker: "Archive 03 / 04",
+    title: "The Switch",
+    location: "Deployment lift",
     signal: "UNIT MEMORY",
     speaker: "MARA-7",
-    body: "Every specialized unit before R-SW-01 failed the exact same way, just at different speeds: each one kept doing the thing it was good at long after the room had stopped rewarding it. R-SW-01 shipped without a favored regime. The lab's paperwork still lists that under Known Defects. Nobody has corrected the paperwork.",
-    beat: "The lift begins moving before Mara finishes. She steadies an old stack of paper records; R-SW-01 catches the one page she misses.",
+    body: "Other units picked one answer. RoboSwitch was built to change answers.",
+    beat: "The lift drops. R-SW-01 powers up.",
     cast: ["mara", "rsw", "drone"],
     actors: [
       { role: "mara", position: "left", pose: "watch" },
@@ -464,12 +403,12 @@ const INTRO_CUTSCENES = [
   {
     image: `${STORY_ART_DIR}between_01_tutorial_loop.png`,
     kicker: "Deployment 01",
-    title: "The First Chamber",
-    location: "Training rail / breach alarm",
+    title: "Breach",
+    location: "Training rail",
     signal: "LIVE INCIDENT",
     speaker: "IONA",
-    body: "This was supposed to be a demonstration. A drift cluster has entered the chamber, the safety doors are sealing, and the old automatic defenses are classifying every moving object as a threat—including you.",
-    beat: "The briefing display cuts out mid-sentence. Red light reaches the room one fixture at a time. R-SW-01 looks to Mara; Mara looks at the closing door; then both look toward the arena.",
+    body: "Something got into the chamber. The defenses think you're part of it.",
+    beat: "Doors slam shut. Combat starts.",
     cast: ["iona", "mara", "rsw"],
     actors: [
       { role: "mara", position: "left", pose: "concerned" },
@@ -568,53 +507,53 @@ const INTRO_LEDGER = {
 
 const BOSS_STORIES = {
   "tutorial-loop": {
-    name: "Prototype C-13", title: "The Unfinished Signal", type: "chaos",
-    intro: "A training prototype wakes before its calibration finishes. Its movements arrive out of order, but its fear is perfectly clear.",
-    boast: "NO PATTERN. NO CAGE. TRY TO KEEP UP.",
-    defeat: "C-13 stops laughing long enough to watch RoboSwitch change modes. For the first time, it copies a choice instead of a glitch.",
-    lesson: "Random motion can escape a cage. It cannot choose where to go next."
+    name: "Prototype C-13", title: "Unfinished Signal", type: "chaos",
+    intro: "C-13 breaks calibration and lunges into the arena.",
+    boast: "NO PATTERN. KEEP UP.",
+    defeat: "C-13 finally stops glitching.",
+    lesson: "Random isn't the same as free."
   },
   "pressure-front": {
-    name: "Marshal Surge", title: "The Forward Signal", type: "pressure",
-    intro: "Surge enters shoulder-first, hydraulic stacks already screaming. Even while standing still, every plate of his armor leans forward.",
-    boast: "A signal that changes direction has already lost.",
-    defeat: "Surge drops to one knee, vents a long breath of steam, and finally stops pushing. He offers RoboSwitch his hand.",
-    lesson: "Force can break a deadlock. Wisdom knows when the obstacle has already moved."
+    name: "Marshal Surge", title: "Forward Signal", type: "pressure",
+    intro: "Surge charges in before the doors finish opening.",
+    boast: "FORWARD. ALWAYS.",
+    defeat: "Surge vents steam and backs off.",
+    lesson: "Know when to stop pushing."
   },
   "control-grid": {
-    name: "Curator Vector", title: "The Predicted Signal", type: "control",
-    intro: "Vector glides into a perfectly aligned grid. His narrow glass frame never wastes a movement; the room rotates to face him instead.",
-    boast: "Your movements have been analyzed. The outcome is already known.",
-    defeat: "One misaligned light remains in Vector's flawless model. He studies it, then RoboSwitch, and allows himself the smallest smile.",
-    lesson: "A model that cannot admit surprise cannot learn."
+    name: "Curator Vector", title: "Predicted Signal", type: "control",
+    intro: "Vector locks the room into a firing grid.",
+    boast: "I ALREADY KNOW YOUR NEXT MOVE.",
+    defeat: "His perfect model misses one last move.",
+    lesson: "Plans need room for surprise."
   },
   "chaos-field": {
-    name: "Jinx Parallax", title: "Nice To Finally Meet You", type: "chaos",
-    intro: "Parallax appears upside down, vanishes mid-wave, and returns wearing a different shoulder plate. She is delighted to meet someone unpredictable.",
-    boast: "You keep changing! Finally—someone interesting.",
-    defeat: "Parallax falls over laughing, then goes quiet. She admits that endless possibility never gave her anywhere to arrive.",
-    lesson: "Variation opens paths. Commitment makes one of them real."
+    name: "Jinx Parallax", title: "No Fixed Address", type: "chaos",
+    intro: "Parallax blinks in, out, then behind you.",
+    boast: "OH, YOU CHANGE TOO? GOOD.",
+    defeat: "Parallax hits the floor laughing.",
+    lesson: "Pick a path eventually."
   },
   "phase-boundary": {
-    name: "Warden Lattice", title: "The Bounded Signal", type: "control",
-    intro: "Lattice unfolds from the doors themselves: a tall rectangular body built from locks, rails, and luminous boundary lines.",
-    boast: "Every signal has a permitted channel. Return to yours.",
-    defeat: "The doors remain open behind her. Workers cross the old boundary, and Lattice watches without stopping them.",
-    lesson: "A boundary can protect a life—or prevent it from moving."
+    name: "Warden Lattice", title: "Bounded Signal", type: "control",
+    intro: "Lattice seals every exit at once.",
+    boast: "RETURN TO YOUR LANE.",
+    defeat: "The doors stay open.",
+    lesson: "Not every boundary should hold."
   },
   "collapse-boss": {
-    name: "Furnace Crown", title: "The Tempered Signal", type: "pressure",
-    intro: "An ancient forge guardian rises from the heat. Molten seams glow beneath an iron crown; each slow step makes ash fall from the ceiling.",
-    boast: "Heat reveals the structure beneath the shell.",
-    defeat: "Crown lowers his hammer instead of dropping it. He bows, accepting that strength is tempered by change rather than proven by refusal.",
-    lesson: "The strongest structure bends before it breaks."
+    name: "Furnace Crown", title: "Tempered Signal", type: "pressure",
+    intro: "Crown rises out of the furnace with the hammer already swinging.",
+    boast: "LET'S SEE WHAT BENDS.",
+    defeat: "Crown lowers the hammer.",
+    lesson: "Bend or break."
   },
   "signal-nexus": {
-    name: "Director Null", title: "The Silent Signal", type: "control",
-    intro: "The music disappears. Null arrives at ordinary height, immaculate and almost weightless. He never walks; the entire chamber moves for him.",
-    boast: "You have exceeded every prediction. That is why you cannot continue.",
-    defeat: "Null asks why perfection failed. Fli lands on his shoulder for one quiet second. RoboSwitch answers: Because perfection never listens.",
-    lesson: "Stability is not stillness. It is the ability to change without losing yourself."
+    name: "Director Null", title: "Silent Signal", type: "control",
+    intro: "The music cuts. Null takes control of the room.",
+    boast: "NO MORE VARIATION.",
+    defeat: "Null's signal drops out.",
+    lesson: "Stable doesn't mean still."
   },
 };
 
@@ -645,9 +584,7 @@ function bossCutscene(level, phase = "intro") {
     signal: `${story.type.toUpperCase()} SIGNATURE`,
     location: `${level.title} / primary chamber`,
     speaker: isIntro ? story.name : "FLI / FIELD LINK",
-    beat: isIntro
-      ? "Fli's wings slow to a hover. She projects the boss signature, folds behind RoboSwitch's shoulder, and chirps once: ready."
-      : "Fli draws a small circle of light between both machines. The arena's warning tone resolves into a warm three-note signal.",
+    beat: isIntro ? "Fli: Ready." : "Signal clear.",
     cast: ["rsw", "drone"],
     bossKind: BOSS_KIND_BY_LEVEL[level.id],
     bossPhase: phase,
@@ -2592,13 +2529,13 @@ function levelCutsceneFor(index) {
     image: `${STORY_ART_DIR}${LEVEL_CUTSCENE_IMAGES[index]}`,
     kicker: `Chamber ${String(index + 1).padStart(2, "0")}`,
     title: index === 0 ? "RoboSwitch Meets Fli" : level.title,
-    body: index === 0 ? "RoboSwitch frees a tiny maintenance butterfly from the damaged training rail. Fli chooses to stay—not as a weapon, but as his eyes, signal link, and friend." : level.subtitle,
+    body: index === 0 ? "RoboSwitch frees Fli from a broken maintenance rail. She sticks around." : level.subtitle,
     signal: brief.signal,
     location: `${level.title} / access gantry`,
     speaker: index === 0 ? "FLI-01, maintenance signal drone" : "MARA-7, field archive",
     beat: index === 0
-      ? "A damaged access panel opens and releases Fli, a tiny robot butterfly with flickering cyan wings. She shakes off one loose spark, circles RoboSwitch, projects FLI ONLINE, and lands on his shoulder."
-      : "Fli enters first, reads the chamber's signal signature, then loops back to RoboSwitch with a small holographic arrow and an encouraging chirp.",
+      ? "FLI ONLINE. One chirp. Let's go."
+      : "Fli scans the room and points forward.",
     cast: index % 2 ? ["mara", "rsw", "drone"] : ["iona", "rsw", "drone"],
     ledger: {
       source: brief.signal,
@@ -3339,10 +3276,18 @@ function updateEnemies(dt) {
       const ratio = clamp(enemy.hp / enemy.maxHp, 0, 1);
       const nextPhase = ratio <= 0.34 ? 3 : ratio <= 0.67 ? 2 : 1;
       if (enemy.bossPhase && nextPhase > enemy.bossPhase) {
-        state.floaters.push({ text: `${spec.label}: PHASE ${nextPhase}`, x: enemy.x, y: enemy.y - enemy.radius - 24, vy: -16, life: 1.25, maxLife: 1.25, color: spec.color, size: 18 });
+        const phaseColor = enemy.kind === "null" ? directorNullColor(enemy) : spec.color;
+        state.floaters.push({ text: `${spec.label}: PHASE ${nextPhase}`, x: enemy.x, y: enemy.y - enemy.radius - 24, vy: -16, life: 1.25, maxLife: 1.25, color: phaseColor, size: 18 });
         state.shake = Math.max(state.shake, 0.7);
-        spawnParticles(enemy.x, enemy.y, spec.color, 24, 220);
+        spawnParticles(enemy.x, enemy.y, phaseColor, 30, 250);
         if (nextPhase === 2) playVoice("rhythm", { once: `rhythm:${state.level.id}`, volume: 0.82 });
+        if (enemy.kind === "null") {
+          enemy.nullAttackTimer = 0.25;
+          enemy.nullBlinkTimer = 0.45;
+          enemy.nullModeTimer = Math.min(enemy.nullModeTimer || 0, 0.55);
+          state.shockwaves.push({ x: enemy.x, y: enemy.y, radius: 18, maxRadius: 220, life: 0.55, maxLife: 0.55, color: phaseColor });
+          triggerFliCue(nextPhase === 2 ? "NULL'S SPEEDING UP!" : "FINAL PHASE!", "alert", 1.4);
+        }
       }
       enemy.bossPhase = nextPhase;
     }
@@ -3372,48 +3317,104 @@ function updateEnemies(dt) {
 }
 
 function updateDirectorNull(enemy, dt) {
+  const p = state.player;
+  const phase = enemy.bossPhase || 1;
   enemy.nullModeTimer = Math.max(-1, (enemy.nullModeTimer || 0) - dt);
   enemy.nullHintCooldown = Math.max(0, (enemy.nullHintCooldown || 0) - dt);
+  enemy.nullAttackTimer = (enemy.nullAttackTimer ?? 1.1) - dt;
+  enemy.nullBlinkTimer = (enemy.nullBlinkTimer ?? 4.8) - dt;
 
   if (enemy.nullModeTimer <= 0) {
-    const phase = enemy.bossPhase || 1;
     enemy.nullModeIndex = ((enemy.nullModeIndex ?? 0) + 1) % DIRECTOR_NULL_MODES.length;
     enemy.role = DIRECTOR_NULL_MODES[enemy.nullModeIndex];
-    enemy.nullModeTimer = phase >= 3 ? 3.8 : phase === 2 ? 4.5 : 5.2;
-
-    // Reset the active behavior so every identity shift reads as a clean beat.
-    enemy.cooldown = 0.72;
+    enemy.nullModeTimer = phase >= 3 ? 3.15 : phase === 2 ? 3.8 : 4.6;
+    enemy.cooldown = 0.52;
     enemy.windup = 0;
     enemy.dash = 0;
     enemy.recover = 0;
-    enemy.fireTimer = 0.92;
+    enemy.fireTimer = 0.55;
     enemy.charge = 0;
-    enemy.turnTimer = 0.16;
+    enemy.turnTimer = 0.12;
     enemy.targetVx = 0;
     enemy.targetVy = 0;
 
     const counter = directorNullCounterMode(enemy.role);
     const color = directorNullColor(enemy);
-    state.floaters.push({
-      text: `NULL: ${enemy.role.toUpperCase()}  •  USE ${counter.toUpperCase()}`,
-      x: enemy.x,
-      y: enemy.y - enemy.radius - 32,
-      vy: -12,
-      life: 1.55,
-      maxLife: 1.55,
-      color,
-      size: 16,
-    });
+    state.floaters.push({ text: `NULL: ${enemy.role.toUpperCase()} • USE ${counter.toUpperCase()}`, x: enemy.x, y: enemy.y - enemy.radius - 32, vy: -16, life: 1.1, maxLife: 1.1, color, size: 16 });
     spawnParticles(enemy.x, enemy.y, color, 22, 190);
-    state.shake = Math.max(state.shake, 0.42);
-    triggerFliCue(`NULL SHIFT: ${enemy.role.toUpperCase()} — USE ${counter.toUpperCase()}!`, "alert", 2.1);
+    triggerFliCue(`USE ${counter.toUpperCase()}!`, "alert", 1.25);
     playSfx("mode", enemy.role);
+  }
+
+  if (enemy.nullAttackTimer <= 0) {
+    const color = directorNullColor(enemy);
+    if (phase === 1) {
+      fireDirectorNullVolley(enemy, 6, 185, 9, color, enemy.age * 0.35);
+      enemy.nullAttackTimer = 2.25;
+    } else if (phase === 2) {
+      fireDirectorNullVolley(enemy, 8, 205, 10, color, enemy.age * 0.5);
+      fireDirectorNullAimedBurst(enemy, 2, 245, 10, color, 0.12);
+      enemy.nullAttackTimer = 1.75;
+    } else {
+      fireDirectorNullVolley(enemy, 10, 225, 11, color, enemy.age * 0.7);
+      fireDirectorNullAimedBurst(enemy, 3, 285, 11, color, 0.18);
+      enemy.nullAttackTimer = 1.25;
+    }
+    state.shake = Math.max(state.shake, phase >= 3 ? 0.22 : 0.12);
+  }
+
+  if (phase >= 2 && enemy.nullBlinkTimer <= 0) {
+    const oldX = enemy.x;
+    const oldY = enemy.y;
+    const angle = Math.atan2(p.y - enemy.y, p.x - enemy.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+    const dist = phase >= 3 ? 190 : 150;
+    enemy.x = clamp(p.x + Math.cos(angle) * dist, enemy.radius + 24, width - enemy.radius - 24);
+    enemy.y = clamp(p.y + Math.sin(angle) * dist, 110 + enemy.radius, height - 110 - enemy.radius);
+    collideCircleObstacles(enemy);
+    spawnParticles(oldX, oldY, directorNullColor(enemy), 16, 180);
+    spawnParticles(enemy.x, enemy.y, directorNullColor(enemy), 20, 210);
+    state.beams.push({ x1: oldX, y1: oldY, x2: enemy.x, y2: enemy.y, life: 0.18, maxLife: 0.18, color: directorNullColor(enemy) });
+    enemy.nullBlinkTimer = phase >= 3 ? 2.8 : 4.1;
   }
 
   if (enemy.role === "pressure") updatePressureEnemy(enemy, dt);
   else if (enemy.role === "chaos") updateChaosEnemy(enemy, dt);
-  else updateControlEnemy(enemy, dt);
+  else updateDirectorNullControlMovement(enemy, dt);
 }
+
+function updateDirectorNullControlMovement(enemy, dt) {
+  const p = state.player;
+  const dx = p.x - enemy.x;
+  const dy = p.y - enemy.y;
+  const dist = Math.max(1, Math.hypot(dx, dy));
+  const nx = dx / dist;
+  const ny = dy / dist;
+  const phase = enemy.bossPhase || 1;
+  const desired = 235;
+  const radial = clamp((dist - desired) * 0.75, -105, 105);
+  const strafe = (phase >= 3 ? 135 : phase === 2 ? 112 : 88) * (Math.sin(enemy.age * 0.9) >= 0 ? 1 : -1);
+  enemy.vx = lerp(enemy.vx, nx * radial - ny * strafe, 0.08);
+  enemy.vy = lerp(enemy.vy, ny * radial + nx * strafe, 0.08);
+}
+
+function fireDirectorNullVolley(enemy, count, speed, damage, color, offset = 0) {
+  for (let i = 0; i < count; i += 1) {
+    const angle = offset + (i / count) * TAU;
+    state.projectiles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, radius: 6, life: 4.2, color, damage, nullShot: true });
+  }
+  spawnParticles(enemy.x, enemy.y, color, 10, 150);
+}
+
+function fireDirectorNullAimedBurst(enemy, count, speed, damage, color, spread = 0.14) {
+  const p = state.player;
+  const base = Math.atan2(p.y - enemy.y, p.x - enemy.x);
+  for (let i = 0; i < count; i += 1) {
+    const centered = i - (count - 1) / 2;
+    const angle = base + centered * spread;
+    state.projectiles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, radius: 5, life: 3.5, color, damage, nullShot: true });
+  }
+}
+
 
 function updatePressureEnemy(enemy, dt) {
   const spec = ENEMIES[enemy.kind];
@@ -3825,7 +3826,7 @@ function updateWaves(dt) {
     beginCutscene([scene], resumePlayingAfterCutscene(() => {
       state.pendingBossWave = 0;
       startWave(nextWave);
-      triggerFliCue("BOSS SIGNAL LOCKED", "alert", 2.4);
+      triggerFliCue("BOSS LOCKED", "alert", 1.5);
       playVoice("bossLocked", { once: `bossLocked:${state.level.id}`, volume: 0.92, force: true });
     }));
     return;
@@ -3994,6 +3995,8 @@ function spawnEnemy(kind, spawn = null, phase = Math.random()) {
       nullModeIndex: 0,
       nullModeTimer: 5.2,
       nullHintCooldown: 0,
+      nullAttackTimer: 0.9 + enemy.spawnGrace,
+      nullBlinkTimer: 4.6 + enemy.spawnGrace,
       cooldown: 0.8 + enemy.spawnGrace,
       windup: 0,
       dash: 0,
@@ -4497,7 +4500,7 @@ function finalizeEndGame(won) {
   if (isFinalVictory) {
     resultTitle.textContent = "VICTORY — SIGNAL RESTORED";
     resultStats.textContent = `DIRECTOR NULL DEFEATED • FINAL SCORE ${state.score} • EBID ${Math.round(state.entropyDeficit * 100)}%`;
-    if (resultQuip) resultQuip.textContent = "The perfect signal is broken. RoboSwitch and Fli leave the Nexus with the city alive, noisy, adaptive — and free to change.";
+    if (resultQuip) resultQuip.textContent = "Null is down. The city signal is moving again.";
     restartButton.textContent = "Replay Finale";
     resultSelectButton.textContent = "Level Select";
     resultMenuButton.textContent = "Main Menu";
